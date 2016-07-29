@@ -346,4 +346,165 @@ And we want to add a `New Pin` link in our `index.html.haml` page.
 	%h2= link_to pin.title, pin
 ```
 
+
+# Add Users
+We're gonna to use `devise` gem.
+
+```console
+$ rails g devise:install
+```
+
+```
+	Some setup you must do manually if you haven't yet:
+
+	  1. Ensure you have defined default url options in your environments files. Here
+	     is an example of default_url_options appropriate for a development environment
+	     in config/environments/development.rb:
+
+	       config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
+
+	     In production, :host should be set to the actual host of your application.
+
+	  2. Ensure you have defined root_url to *something* in your config/routes.rb.
+	     For example:
+
+	       root to: "home#index"
+
+	  3. Ensure you have flash messages in app/views/layouts/application.html.erb.
+	     For example:
+
+	       <p class="notice"><%= notice %></p>
+	       <p class="alert"><%= alert %></p>
+
+	  4. You can copy Devise views (for customization) to your app by running:
+
+	       rails g devise:views
+```
+
+in config/environments/development.rb:
+```
+config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
+```
+
+And
+```console
+$ rails g devise:views
+```
+
+Next step is generate a devise model.
+```console
+$ rails g devise User
+$ rake db:migrate
+```
+
+Let's restart the server and go to `http://localhost:3000/users/sign_up` to make sure everything is correct.
+![image](https://github.com/TimingJL/pinterest_clone/blob/master/pic/basic_signup_page.jpeg)
+
+
+So what we need to do next is make sure that each Pin that is created has a user assigned to it.
+In `app/models/user.rb`
+```ruby
+class User < ApplicationRecord
+  devise :database_authenticatable, :registerable,
+         :recoverable, :rememberable, :trackable, :validatable
+  has_many :pins
+end
+```
+
+And in `app/models/pin.rb`
+```ruby
+class Pin < ApplicationRecord
+	belongs_to :user
+end
+```
+
+Then we need to generate migration so that our Pin has a user_id column.
+```console
+$ rails g migration add_user_id_to_pins user_id:integer:index
+$ rake db:migrate
+```
+
+That's pop into the rails console
+```console
+$ rails c
+```
+
+In rails console
+```console
+> @pin = Pin.first
+```
+```
+irb(main):001:0> @pin = Pin.first       
+  Pin Load (0.5ms)  SELECT  "pins".* FROM "pins" ORDER BY "pins"."id" ASC LIMIT ?  [["LIMIT", 1]]       
+=> #<Pin id: 2, title: "Pinterest", description: "Pinterest is a web and mobile application company ...", created_at: "2016-07-29 08:26:03", updated_at: "2016-07-29 08:26:03", user_id: nil>
+```
+
+You can see the user_id is nil. So what I'll do is:
+```console
+> @user = User.first
+> @pin.user = @user
+> @pin
+```
+
+```
+irb(main):001:0> @pin = Pin.first     
+  Pin Load (0.5ms)  SELECT  "pins".* FROM "pins" ORDER BY "pins"."id" ASC LIMIT ?  [["LIMIT", 1]]
+=> #<Pin id: 2, title: "Pinterest", description: "Pinterest is a web and mobile application company ...", created_at: "2016-07-29 08:26:03", updated_at: "2016-07-29 08:26:03", user_id: nil>
+```
+You can see the user_id is 1. Then
+```console
+> @pin.save
+```
+
+Let's test in `app/views/pins/show.html.haml`
+```haml
+%h1= @pin.title
+%p= simple_format @pin.description
+%p
+Submitted by
+= @pin.user.email
+%br
+
+= link_to "Back", root_path
+= link_to "Edit", edit_pin_path
+= link_to "Delete", pin_path, method: :delete, data: {confirm: "Are you sure?"}
+```
+![image](https://github.com/TimingJL/pinterest_clone/blob/master/pic/user_test.jpeg)
+
+If we create a new Pin right now, it's not going to save because we didn't have `@pin.user.email` for that Pin.
+
+So back to our `app/controllers/pins_controller.rb`, we need to tweak the `new action` a bit.       
+We change
+```ruby
+	def new
+		@pin = Pin.new
+	end
+
+	def create
+		@pin = Pin.new(pin_params)
+
+		if @pin.save
+			redirect_to @pin, notice: "Successfully created new Pin"
+		else
+			render 'new'
+		end
+	end	
+```
+to
+```ruby
+	def new
+		@pin = current_user.pins.build
+	end
+
+	def create
+		@pin = current_user.pins.build(pin_params)
+
+		if @pin.save
+			redirect_to @pin, notice: "Successfully created new Pin"
+		else
+			render 'new'
+		end
+	end
+```
+
 To be continued...
