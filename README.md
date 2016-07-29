@@ -338,4 +338,12 @@ In `app/views/pins/show.html.haml`
 = link_to "Delete", pin_path, method: :delete, data: {confirm: "Are you sure?"}
 ```
 
+And we want to add a `New Pin` link in our `index.html.haml` page.     
+``app/views/pins/index.html.haml``
+```haml
+= link_to "New Pin", new_pin_path
+- @pins.each do |pin|
+	%h2= link_to pin.title, pin
+```
+
 To be continued...
