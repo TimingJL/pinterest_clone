@@ -561,9 +561,26 @@ Under `app/views/layouts/application.html.haml`
 ![image](https://github.com/TimingJL/pinterest_clone/blob/master/pic/navbar.jpeg)
 
 
+### Add Wrapper
+Let's add wrapper around the sign-in, sign-out, and sign-up page.     
+Under `app/views/pins/new.html.haml`
+```haml
+.col-md-8.col-md-offset-3
+	%h1 New Form
+	= render 'form'
+	= link_to "Back", root_path
+```
 
+Under `app/views/pins/edit.html.haml`
+```haml
+.col-md-8.col-md-offset-3
+	%h1 Edit Pin
+	= render 'form'
+	= link_to 'Cancel', pin_path
+```
 
-
+# Image Uploading
+Next, we want to add the ability to upload images
 
 
 
