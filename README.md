@@ -313,4 +313,29 @@ In `app/views/pins/show.html.haml`
 ![image](https://github.com/TimingJL/pinterest_clone/blob/master/pic/edit_link.jpeg)
 ![image](https://github.com/TimingJL/pinterest_clone/blob/master/pic/edit_page.jpeg)
 
+### Destroy
+Now, let's add the ability to destroy. So in our controller. let's do:     
+`app/controllers/pins_controller.rb`
+```ruby
+	...
+	...
+	def destroy
+		@pin.destroy
+		redirect_to root_path
+	end
+	...
+	...
+```
+
+Then, in our show, we need to add a `destroy link`.       
+In `app/views/pins/show.html.haml`
+```haml
+%h1= @pin.title
+%p= simple_format @pin.description
+
+= link_to "Back", root_path
+= link_to "Edit", edit_pin_path
+= link_to "Delete", pin_path, method: :delete, data: {confirm: "Are you sure?"}
+```
+
 To be continued...
