@@ -152,7 +152,7 @@ http://rails.ruby.tw/getting_started.html
 http://apidock.com/rails/ActionView/Helpers/TextHelper/pluralize
 
 Back to the browser, go to `http://localhost:3000/pins/new`
-![image](https://github.com/TimingJL/pin_board/blob/master/pic/basic_new_page.jpeg)
+![image](https://github.com/TimingJL/pinterest_clone/blob/master/pic/basic_new_page.jpeg)
 
 
 Then, let's go back to our `app/controllers/pins_controller.rb`
@@ -242,7 +242,7 @@ In `app/views/pins/show.html.haml`
 ```
 
 Now, we can create our first Pin and show it up.
-![image](https://github.com/TimingJL/pin_board/blob/master/pic/first_pin.jpeg)
+![image](https://github.com/TimingJL/pinterest_clone/blob/master/pic/first_pin.jpeg)
 
 So far, we have the flash message, title and description.
 
@@ -310,7 +310,7 @@ In `app/views/pins/show.html.haml`
 = link_to "Back", root_path
 = link_to "Edit", edit_pin_path
 ```
-![image](https://github.com/TimingJL/pin_board/blob/master/pic/edit_link.jpeg)
-![image](https://github.com/TimingJL/pin_board/blob/master/pic/edit_page.jpeg)
+![image](https://github.com/TimingJL/pinterest_clone/blob/master/pic/edit_link.jpeg)
+![image](https://github.com/TimingJL/pinterest_clone/blob/master/pic/edit_page.jpeg)
 
 To be continued...
