@@ -439,7 +439,7 @@ irb(main):001:0> @pin = Pin.first
 => #<Pin id: 2, title: "Pinterest", description: "Pinterest is a web and mobile application company ...", created_at: "2016-07-29 08:26:03", updated_at: "2016-07-29 08:26:03", user_id: nil>
 ```
 
-You can see the user_id is nil. So what I'll do is:
+You can see the `user_id: `nil`. So what I'll do is:
 ```console
 > @user = User.first
 > @pin.user = @user
@@ -449,9 +449,10 @@ You can see the user_id is nil. So what I'll do is:
 ```
 irb(main):001:0> @pin = Pin.first     
   Pin Load (0.5ms)  SELECT  "pins".* FROM "pins" ORDER BY "pins"."id" ASC LIMIT ?  [["LIMIT", 1]]
-=> #<Pin id: 2, title: "Pinterest", description: "Pinterest is a web and mobile application company ...", created_at: "2016-07-29 08:26:03", updated_at: "2016-07-29 08:26:03", user_id: nil>
+=> #<Pin id: 2, title: "Pinterest", description: "Pinterest is a web and mobile application company ...",       
+created_at: "2016-07-29 08:26:03", updated_at: "2016-07-29 08:26:03", user_id: nil>
 ```
-You can see the user_id is 1. Then
+You can see the `user_id: 1`. Then
 ```console
 > @pin.save
 ```
@@ -473,38 +474,97 @@ Submitted by
 
 If we create a new Pin right now, it's not going to save because we didn't have `@pin.user.email` for that Pin.
 
-So back to our `app/controllers/pins_controller.rb`, we need to tweak the `new action` a bit.       
+So back to our `app/controllers/pins_controller.rb`, we need to tweak the `new action` and `create action` a bit.       
 We change
 ```ruby
-	def new
-		@pin = Pin.new
+def new
+	@pin = Pin.new
+end
+
+def create
+	@pin = Pin.new(pin_params)
+
+	if @pin.save
+		redirect_to @pin, notice: "Successfully created new Pin"
+	else
+		render 'new'
 	end
-
-	def create
-		@pin = Pin.new(pin_params)
-
-		if @pin.save
-			redirect_to @pin, notice: "Successfully created new Pin"
-		else
-			render 'new'
-		end
-	end	
+end	
 ```
 to
 ```ruby
-	def new
-		@pin = current_user.pins.build
-	end
+def new
+	@pin = current_user.pins.build
+end
 
-	def create
-		@pin = current_user.pins.build(pin_params)
+def create
+	@pin = current_user.pins.build(pin_params)
 
-		if @pin.save
-			redirect_to @pin, notice: "Successfully created new Pin"
-		else
-			render 'new'
-		end
+	if @pin.save
+		redirect_to @pin, notice: "Successfully created new Pin"
+	else
+		render 'new'
 	end
+end
 ```
+
+# Styling and Bootstrap
+https://github.com/twbs/bootstrap-sass       
+
+### Import Bootstrap
+We already have the gem install.      
+Next, we need to go into `app/assets/stylesheets` and rename `application.css` to `application.css.scss`.       
+And then, we gonna to import Bootstrap styles in `app/assets/stylesheets/application.css.scss`:
+
+	@import "bootstrap-sprockets";
+	@import "bootstrap";
+
+![image](https://github.com/TimingJL/pinterest_clone/blob/master/pic/bootstrap_import.jpeg)
+
+Require Bootstrap Javascripts in `app/assets/javascripts/application.js`:
+```js
+//= require jquery
+//= require bootstrap-sprockets
+```
+
+### Add Navbar
+So to start, I'm going to add the application layout file.        
+Under `app/views/layouts/application.html.haml`
+```haml
+!!! 5
+%html
+%head
+	%title Pin Board
+	= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true
+	= javascript_include_tag 'application', 'data-turbolinks-track' => true
+	= csrf_meta_tags
+
+%body
+	%nav.navbar.navbar-default
+		.container
+			.navbar-brand= link_to "Pin Board", root_path
+
+			- if user_signed_in?
+				%ul.nav.navbar-nav.navbar-right
+					%li= link_to "New Pin", new_pin_path
+					%li= link_to "Account", edit_user_registration_path
+					%li= link_to "Sign Out", destroy_user_session_path, method: :delete
+			- else
+				%ul.nav.navbar-nav.navbar-right
+					%li= link_to "Sign Up", new_user_registration_path
+					%li= link_to "Sign In", new_user_session_path
+	.container
+		- flash.each do |name, msg|
+			= content_tag :div, msg, class: "alert alert-info"
+		= yield
+```
+![image](https://github.com/TimingJL/pinterest_clone/blob/master/pic/navbar.jpeg)
+
+
+
+
+
+
+
 
 To be continued...
