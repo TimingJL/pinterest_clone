@@ -562,7 +562,7 @@ Under `app/views/layouts/application.html.haml`
 
 
 ### Add Wrapper
-Let's add wrapper around the sign-in, sign-out, and sign-up page.     
+Let's add wrapper around the new and edit page.     
 Under `app/views/pins/new.html.haml`
 ```haml
 .col-md-8.col-md-offset-3
@@ -580,7 +580,93 @@ Under `app/views/pins/edit.html.haml`
 ```
 
 # Image Uploading
-Next, we want to add the ability to upload images
+Next, we want to add the ability to upload images.
+So we add `paperclip` to our `Gemfile`.          
+```
+gem 'paperclip', '~> 4.2.0'
+```
+https://github.com/thoughtbot/paperclip      
+
+Then we run `bundle install` and restart our server.      
+Now, we need to add `has_attached_file` and the `validates_attachment_content_type` to      
+`app/models/pin.rb`
+```ruby
+class Pin < ApplicationRecord
+	belongs_to :user
+
+	has_attached_file :image, :styles => { :medium => "300x300>" }
+	validates_attachment_content_type :image, :content_type => /\Aimage\/.*\Z/
+end
+```
+
+And next, we need to add migration. We can do that by running:
+```console
+$ rails g paperclip pin image
+$ rake db:migrate
+```
+
+Next, in our form `app/views/_form.html.haml`
+```haml
+= simple_form_for @pin, html: { multipart: true } do |f|
+	- if @pin.errors.any?
+		#errors
+			%h2
+				= pluralize(@pin.error.count, "error")
+				prevented this Pin form saving
+			%ul
+				-@pin.errors.full_messages.each do |msg|
+					%li = msg
+
+	.form-group
+		= f.input :image, input_html: { class: 'form-control'}
+
+	.form-group
+		= f.input :title, input_html: { class: 'form-control'}
+
+	.form-group
+		= f.input :description, input_html: { class: 'form-control'}
+
+	= f.button :submit, class: "btn btn-primary"
+```
+
+Now, let's do `New Pin` in browser:
+![image](https://github.com/TimingJL/pinterest_clone/blob/master/pic/image_upload.jpeg)
+
+One last thing we need to do is add `image` to our `pin_params` action.
+`app/controllers/pins_controller.rb`
+```ruby
+def pin_params
+	params.require(:pin).permit(:title, :description, :image)
+end
+```
+
+And let's go into the `app/views/show.html.haml`, and add `image_tag` to the top.
+```haml
+= image_tag @pin.image.url(:medium)
+%h1= @pin.title
+%p= simple_format @pin.description
+%p
+Submitted by
+= @pin.user.email
+%br
+
+= link_to "Back", root_path
+= link_to "Edit", edit_pin_path
+= link_to "Delete", pin_path, method: :delete, data: {confirm: "Are you sure?"}
+```
+![image](https://github.com/TimingJL/pinterest_clone/blob/master/pic/image_upload_test.jpeg)
+
+Now, let's add this to the `index.html.haml` as well.     
+In `app/views/index.html.haml`
+```haml
+- @pins.each do |pin|
+	= link_to (image_tag pin.image.url(:medium)), pin
+	%h2= link_to pin.title, pin
+```
+![image](https://github.com/TimingJL/pinterest_clone/blob/master/pic/index_image.jpeg)
+
+
+
 
 
 
