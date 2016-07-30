@@ -630,7 +630,7 @@ Next, in our form `app/views/_form.html.haml`
 ```
 
 Now, let's do `New Pin` in browser:
-![image](https://github.com/TimingJL/pinterest_clone/blob/master/pic/image_upload.jpeg)
+![image](https://github.com/TimingJL/pinterest_clone/blob/master/pic/image_upload_new.jpeg)
 
 One last thing we need to do is add `image` to our `pin_params` action.
 `app/controllers/pins_controller.rb`
