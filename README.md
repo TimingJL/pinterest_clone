@@ -866,6 +866,9 @@ In `app/views/pins/show.html.haml`
 							= link_to "Edit", edit_pin_path, class: "btn btn-default"
 							= link_to "Delete", pin_path, method: :delete, data: { confirm: "Are you sure?" }, class: "btn btn-default"
 ```
+![image](https://github.com/TimingJL/pinterest_clone/blob/master/pic/show_page_styling.jpeg)
+
+
 
 Last, I wanna add a user under the title.         
 In `app/views/pins/index.html.haml`
@@ -880,8 +883,89 @@ In `app/views/pins/index.html.haml`
 				Submitted by
 				= pin.user.email
 ```
+![image](https://github.com/TimingJL/pinterest_clone/blob/master/pic/add_user_in_index.jpeg)
 
 
+
+# Voting
+To do voting, we're going to need to use `acts_as_votable` gem.      
+https://github.com/ryanto/acts_as_votable    
+
+```
+gem 'acts_as_votable', '~> 0.10.0'
+```
+Do bundel install and restar our server as well.
+Next we need to do is migration.
+```console
+$ rails g acts_as_votable:migration
+$ rake db:migrate
+```
+
+Then, inside of our pin model `app/models/pin.rb`, we add `acts_as_votable` on the top.
+```ruby
+class Pin < ApplicationRecord
+	acts_as_votable
+	belongs_to :user
+
+	has_attached_file :image, :styles => { :medium => "300x300>" }
+	validates_attachment_content_type :image, :content_type => /\Aimage\/.*\Z/
+end
+```
+
+The next we need to add some routes.
+In `config/routes.rb`
+```ruby
+Rails.application.routes.draw do
+  devise_for :users
+  resources :pins do
+  	member do
+  		put "like", to: "pins#upvote"
+  	end
+  end
+
+  root "pins#index"
+end
+```
+
+Next, inside of our `app/controllers/pins_controller.rb`, I'm going to create a `upvote action`.
+```ruby
+class PinsController < ApplicationController
+	before_action :find_pin, only: [:show, :edit, :update, :destroy, :upvote]
+	...
+	...
+	def upvote
+		@pin.upvote_by current_user
+		redirect_to :back
+	end
+	...
+	...
+```
+
+Then, in our show page `app/views/pins/show.html.haml`
+```haml
+#pin_show.row
+	.col-md-8.col-md-offset-2
+		.panel.panel-default
+			.panel-heading.pin_image
+				= image_tag @pin.image.url
+			.panel-body
+				%h1= @pin.title
+				%p.description= @pin.description
+			.panel-footer
+				.row
+					.col-md-6
+						%p.user
+							Submitted by
+							= @pin.user.email
+					.col-md-6
+						.btn-group.pull-right
+							= link_to like_pin_path(@pin), method: :put, class: "btn btn-default" do
+								%span.glyphicon.glyphicon-heart
+								= @pin.get_upvotes.size
+							= link_to "Edit", edit_pin_path, class: "btn btn-default"
+							= link_to "Delete", pin_path, method: :delete, data: { confirm: "Are you sure?" }, class: "btn btn-default"
+```
+![image](https://github.com/TimingJL/pinterest_clone/blob/master/pic/voting.jpeg)
 
 
 
