@@ -11,7 +11,12 @@ Mackenzie Child's video really inspired me. So I decided to follow all of his ra
 
 This time we're going to build a Pinterest like application which includes the Pins, Users, Image uploading, and Voting as well. A user must sign-in in order to  submit a new pin or vote, as well as to delete a pin. And then we got some amazingly going on, so the Pins will scale to the size of the PinBoard(window size).
 
-https://mackenziechild.me/12-in-12/4/
+https://mackenziechild.me/12-in-12/4/        
+
+![image](https://github.com/TimingJL/pinterest_clone/blob/master/pic/index_demo.jpeg)
+![image](https://github.com/TimingJL/pinterest_clone/blob/master/pic/show_demo.jpeg)
+![image](https://github.com/TimingJL/pinterest_clone/blob/master/pic/edit_demo.jpeg)
+![image](https://github.com/TimingJL/pinterest_clone/blob/master/pic/signup_demo.jpeg)
 
 
 ### Highlights of this course
@@ -968,8 +973,194 @@ Then, in our show page `app/views/pins/show.html.haml`
 ![image](https://github.com/TimingJL/pinterest_clone/blob/master/pic/voting.jpeg)
 
 
+# Authentication
+
+In `app/views/pins/show.html.haml`
+```haml
+...
+...
+- if user_signed_in?
+	= link_to "Edit", edit_pin_path, class: "btn btn-default"
+	= link_to "Delete", pin_path, method: :delete, data: { confirm: "Are you sure?" }, class: "btn btn-default"
+```
+
+Users unable to create a post or like a post if they don't sign in.       
+In `app/controllers/pins_controller.rb`
+```ruby
+class PinsController < ApplicationController
+	before_action :find_pin, only: [:show, :edit, :update, :destroy, :upvote]
+	before_action :authenticate_user!, except: [:index, :show]
+	...
+	...
+```
+
+# Form Styling
+
+In `app/views/pins/new.html.haml`
+```haml
+.col-md-8.col-md-offset-2
+	.row
+		.panel.panel-default
+			.panel-heading
+				%h1 Create A New Pin
+			.panel-body
+				= render 'form'
+```
+
+In `app/views/pins/edit.html.haml`
+```haml
+#edit_page.col-md-8.col-md-offset-2
+	.row
+		.panel.panel-default
+			.panel-heading
+				%h1 Edit Your Pin
+			.panel-body
+				.current_image
+					%strong.center Current Image
+					= image_tag @pin.image.url(:medium)
+				= render 'form'
+```
+
+In `app/views/devise/registrations/new.html.erb`
+```html
+
+	<div class="col-md-8 col-md-offset-2">
+	  <div class="row">
+	    <div class="panel panel-default">
+	      <div class="panel-heading">
+	        <h2>Sign up</h2>
+	      </div>
+	      <div class="panel-body">
+	      	<%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
+					  <%= devise_error_messages! %>
+
+					  <div class="form-group">
+					  	<%= f.label :email %><br />
+					  	<%= f.email_field :email, autofocus: true, class: "form-control" %>
+					  </div>
+
+					  <div class="form-group">
+					  	<%= f.label :password %> <% if @validatable %><i>(<%= @minimum_password_length %> characters minimum)</i><% end %><br />
+					    <%= f.password_field :password, autocomplete: "off", class: "form-control" %>
+					  </div>
+
+					  <div class="form-group">
+					  	<%= f.label :password_confirmation %><br />
+					    <%= f.password_field :password_confirmation, autocomplete: "off", class: "form-control" %>
+					  </div>
+
+					  <div class="form-group">
+					  	<%= f.submit "Sign up", class: "btn btn-primary" %>
+					  </div>
+					<% end %>
+
+					<%= render "devise/shared/links" %>
+	      </div>
+			</div>
+		</div>
+	</div>
+```
 
 
 
 
-To be continued...
+In `app/views/devise/registrations/edit.html.erb`
+```html
+
+	<div class="col-md-8 col-md-offset-2">
+	  <div class="row">
+	    <div class="panel panel-default">
+	      <div class="panel-heading">
+	        <h2>Edit Your Account</h2>
+	      </div>
+
+	      <div class="panel-body">
+	        <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }) do |f| %>
+	          <%= devise_error_messages! %>
+
+	          <div class="form-group">
+	            <%= f.label :email %><br />
+	            <%= f.email_field :email, autofocus: true, class: "form-control" %>
+	          </div>
+
+	          <% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
+	            <div>Currently waiting confirmation for: <%= resource.unconfirmed_email %></div>
+	          <% end %>
+
+	          <div class="form-group">
+	            <%= f.label :password %> <i>(leave blank if you don't want to change it)</i><br />
+	            <%= f.password_field :password, autocomplete: "off", class: "form-control" %>
+	          </div>
+
+	          <div class="form-group">
+	            <%= f.label :password_confirmation %><br />
+	            <%= f.password_field :password_confirmation, autocomplete: "off", class: "form-control" %>
+	          </div>
+
+	          <div class="form-group">
+	            <%= f.label :current_password %> <i>(we need your current password to confirm your changes)</i><br />
+	            <%= f.password_field :current_password, autocomplete: "off", class: "form-control" %>
+	          </div>
+
+	          <div class="form-group">
+	            <%= f.submit "Update", class: "btn btn-primary" %>
+	          </div>
+	        <% end %>
+	      </div>
+
+	      <div class="panel-footer">
+	        <h3>Cancel my account</h3>
+
+	        <p>Unhappy? <%= button_to "Cancel my account", registration_path(resource_name), data: { confirm: "Are you sure?" }, method: :delete, class: "btn btn-default" %></p>
+	        <br>
+	        <%= link_to "Back", :back, class: "btn btn-default" %>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+```
+
+
+In `app/views/devise/sessions/new.html.erb`
+```html
+
+	<div class="col-md-8 col-md-offset-2">
+	  <div class="row">
+	    <div class="panel panel-default">
+	      <div class="panel-heading">
+					<h2>Sign In</h2>
+				</div>
+
+				<div class="panel-body">
+					<%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+				  	<div class="form-group">
+				  		<%= f.label :email %><br />
+				  		<%= f.email_field :email, autofocus: true, class: "form-control" %>
+				  	</div>
+
+				  	<div class="form-group">
+				  		<%= f.label :password %><br />
+				    	<%= f.password_field :password, autocomplete: "off", class: "form-control" %>
+				    </div>
+
+				  <% if devise_mapping.rememberable? -%>
+				    <div class="form-group">
+				    	<%= f.check_box :remember_me %> <%= f.label :remember_me %>
+				    </div>
+				  <% end -%>
+
+				  <div class="form-group">
+				  	<%= f.submit "Log in", class: "btn btn-primary" %>
+				  </div>
+				<% end %>
+
+				<%= render "devise/shared/links" %>
+				</div>
+			</div>
+		</div>
+	</div>
+```
+
+
+
+Finished!
