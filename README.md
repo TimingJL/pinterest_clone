@@ -677,4 +677,215 @@ In `app/views/pins/edit.html.haml`
 ``` 
 
 
+# Masonry
+Masonry is a light-weight layout framework which wraps AutoLayout with a nicer syntax.        
+https://github.com/kristianmandrup/masonry-rails      
+
+Let's go to our `Gemfile`, we need a gem called `masonry-rails`.          
+In `Gemfile`, we add this line, run bundle install and restart the server.
+```
+gem 'masonry-rails', '~> 0.2.1'
+```
+
+In `app/assets/javascripts/application.js`, under jquery
+```js
+//= require jquery
+//= require jquery_ujs
+//= require masonry/jquery.masonry
+//= require bootstrap-sprockets
+//= require turbolinks
+//= require_tree .
+```
+
+To get this work, I'm going to add some styling and coffescript.
+In `app/assets/javascripts/pin.coffee`
+```coffee
+$ ->
+  $('#pins').imagesLoaded ->
+    $('#pins').masonry
+      itemSelector: '.box'
+      isFitWidth: true
+```
+
+
+In our `app/views/pins/index.html.haml`, we need to add:
+```haml
+#pins.transitions-enabled
+	- @pins.each do |pin|
+		.box.panel.panel-default
+			= link_to (image_tag pin.image.url), pin
+			.panel-body
+				%h2= link_to pin.title, pin
+```
+
+
+### Basic Styling
+Then, let's add some styles (`*= require 'masonry/transitions'` and some css).
+In `app/assets/stylesheets/application.css.scss`
+```scss
+/*
+ * This is a manifest file that'll be compiled into application.css, which will include all the files
+ * listed below.
+ *
+ * Any CSS and SCSS file within this directory, lib/assets/stylesheets, vendor/assets/stylesheets,
+ * or vendor/assets/stylesheets of plugins, if any, can be referenced here using a relative path.
+ *
+ * You're free to add application-wide styles to this file and they'll appear at the bottom of the
+ * compiled file so the styles you add here take precedence over styles defined in any styles
+ * defined in the other CSS/SCSS files in this directory. It is generally better to create a new
+ * file per style scope.
+ *
+ *= require 'masonry/transitions'
+ *= require_tree .
+ *= require_self
+ */
+
+@import "bootstrap-sprockets";
+@import "bootstrap";
+
+body {
+	background: #E9E9E9;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	font-weight: 100;
+}
+
+nav {
+	box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.22);
+	.navbar-brand {
+		a {
+			color: #BD1E23;
+			font-weight: bold;
+			&:hover {
+				text-decoration: none;
+			}
+		}
+	}
+}
+
+#pins {
+  margin: 0 auto;
+  width: 100%;
+  .box {
+	  margin: 10px;
+	  width: 350px;
+	  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.22);
+	  border-radius: 7px;
+	  text-align: center;
+	  img {
+	  	max-width: 100%;
+	  	height: auto;
+	  }
+	  h2 {
+	  	font-size: 22px;
+	  	margin: 0;
+	  	padding: 25px 10px;
+	  	a {
+				color: #474747;
+	  	}
+	  }
+	  .user {
+	  	font-size: 12px;
+	  	border-top: 1px solid #EAEAEA;
+			padding: 15px;
+			margin: 0;
+	  }
+	}
+}
+
+#edit_page {
+	.current_image {
+		img {
+			display: block;
+			margin: 20px 0;
+		}
+	}
+}
+
+#pin_show {
+	.panel-heading {
+		padding: 0;
+	}
+	.pin_image {
+		img {
+			max-width: 100%;
+			width: 100%;
+			display: block;
+			margin: 0 auto;
+		}
+	}
+	.panel-body {
+		padding: 35px;
+		h1 {
+			margin: 0 0 10px 0;
+		}
+		.description {
+			color: #868686;
+			line-height: 1.75;
+			margin: 0;
+		}
+	}
+	.panel-footer {
+		padding: 20px 35px;
+		p {
+			margin: 0;
+		}
+		.user {
+			padding-top: 8px;
+		}
+	}
+}
+
+textarea {
+	min-height: 250px;
+}
+```
+![image](https://github.com/TimingJL/pinterest_clone/blob/master/pic/index_page_with_Masonry.jpeg)
+
+
+Then, let's styling the show page.      
+In `app/views/pins/show.html.haml`
+```haml
+#pin_show.row
+	.col-md-8.col-md-offset-2
+		.panel.panel-default
+			.panel-heading.pin_image
+				= image_tag @pin.image.url
+			.panel-body
+				%h1= @pin.title
+				%p.description= @pin.description
+			.panel-footer
+				.row
+					.col-md-6
+						%p.user
+							Submitted by
+							= @pin.user.email
+					.col-md-6
+						.btn-group.pull-right
+							= link_to "Edit", edit_pin_path, class: "btn btn-default"
+							= link_to "Delete", pin_path, method: :delete, data: { confirm: "Are you sure?" }, class: "btn btn-default"
+```
+
+Last, I wanna add a user under the title.         
+In `app/views/pins/index.html.haml`
+```haml
+#pins.transitions-enabled
+	- @pins.each do |pin|
+		.box.panel.panel-default
+			= link_to (image_tag pin.image.url), pin
+			.panel-body
+				%h2= link_to pin.title, pin
+				%p.user
+				Submitted by
+				= pin.user.email
+```
+
+
+
+
+
+
+
+
 To be continued...
