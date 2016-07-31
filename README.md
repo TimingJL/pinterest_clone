@@ -666,8 +666,15 @@ In `app/views/index.html.haml`
 ![image](https://github.com/TimingJL/pinterest_clone/blob/master/pic/index_image.jpeg)
 
 
-
-
+Then, I want to show the user which image they are editing or which image they are currently uploading.     
+In `app/views/pins/edit.html.haml`
+```haml
+.col-md-8.col-md-offset-3
+	%h1 Edit Pin
+	= image_tag @pin.image.url(:medium)
+	= render 'form'
+	= link_to 'Cancel', pin_path
+``` 
 
 
 To be continued...
